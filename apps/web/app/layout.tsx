@@ -1,4 +1,5 @@
-import "./globals.scss";
+import "@repo/ui/globals.scss";
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
@@ -17,7 +18,7 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} dark`}>
         <Providers>{children}</Providers>
       </body>
     </html>
