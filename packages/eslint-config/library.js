@@ -25,10 +25,15 @@ module.exports = {
     ".*.js",
     "node_modules/",
     "dist/",
+    "*.json",
   ],
   overrides: [
     {
       files: ["*.js?(x)", "*.ts?(x)"],
+    },
+    {
+      files: ["*.json"],
+      excludedFiles: "*.json",
     },
   ],
 };
