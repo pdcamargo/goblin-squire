@@ -7,10 +7,13 @@ import { AppService } from './app.service';
 import databaseConfig from './config/database.config';
 
 @Module({
-  imports: [ConfigModule.forRoot(), TypeOrmModule.forRoot(databaseConfig())],
+  imports: [
+    ConfigModule.forRoot(),
+    // TypeOrmModule.forRoot(databaseConfig())
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {
-  constructor(private dataSource: DataSource) {}
+  constructor() {} // private dataSource: DataSource
 }
