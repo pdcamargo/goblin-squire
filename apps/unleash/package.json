@@ -1,0 +1,15 @@
+{
+  "name": "unleash",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "unleash-server": "^6.4.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
