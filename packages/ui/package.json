@@ -28,6 +28,7 @@
     "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.53.0",
+    "eslint-config-turbo": "^1.10.12",
     "postcss": "^8.4.49",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
