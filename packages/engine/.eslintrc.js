@@ -7,4 +7,8 @@ module.exports = {
   parserOptions: {
     project: "./tsconfig.json",
   },
+  rules: {
+    // forbid any
+    "@typescript-eslint/no-explicit-any": "error",
+  },
 };
