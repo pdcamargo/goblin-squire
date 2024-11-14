@@ -1,3 +1,8 @@
+# Requirements
+
+- Docker for [Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [Mac](https://docs.docker.com/desktop/setup/install/mac-install/) or [Linux](https://docs.docker.com/desktop/setup/install/linux-install/)
+- [Postgres](https://www.postgresql.org/download/)
+
 ## What's inside?
 
 This Turborepo includes the following packages/apps:
