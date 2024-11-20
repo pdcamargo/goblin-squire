@@ -9,11 +9,15 @@ export type ApplicationInitOptions = {
   htmlContainerSelector: string;
 };
 
+export type DrawTriangleProps = {
+  color: number[];
+};
+
 class Renderer {
   #regl: regl.Regl;
   #onRender: (opt: regl.DefaultContext) => void;
 
-  #drawTriangle: regl.DrawCommand<regl.DefaultContext, { color: number[] }>;
+  drawTriangle: regl.DrawCommand<regl.DefaultContext, DrawTriangleProps>;
 
   constructor({
     container,
@@ -37,7 +41,7 @@ class Renderer {
       this.#onRender(opt);
     });
 
-    this.#drawTriangle = this.#regl({
+    this.drawTriangle = this.#regl({
       frag: `
         precision mediump float;
 
@@ -65,15 +69,11 @@ class Renderer {
       },
 
       uniforms: {
-        color: this.#regl.prop("color"),
+        color: this.#regl.prop<DrawTriangleProps, "color">("color"),
       },
 
       count: 3,
     });
-  }
-
-  public drawTriangle(color: number[]) {
-    this.#drawTriangle({ color });
   }
 }
 
@@ -124,12 +124,14 @@ export class Application {
   }
 
   #onRender = ({ time }: regl.DefaultContext) => {
-    this.renderer.drawTriangle([
-      Math.cos(time * 1.2),
-      Math.sin(time * 0.5),
-      Math.cos(time * -0.1),
-      1.0,
-    ]);
+    this.renderer.drawTriangle({
+      color: [
+        Math.cos(time * 1.2),
+        Math.sin(time * 0.5),
+        Math.cos(time * -0.1),
+        1.0,
+      ],
+    });
   };
 
   public get gameId() {
