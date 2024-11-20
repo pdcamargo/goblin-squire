@@ -11,7 +11,8 @@
       "./src/hooks/*.ts",
       "./src/hooks/*.tsx"
     ],
-    "./components/*": "./src/components/*.tsx"
+    "./components/*": "./src/components/*.tsx",
+    "./icons": "./src/icons.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

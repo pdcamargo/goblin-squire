@@ -19,9 +19,9 @@ import databaseConfig from './config/database.config';
     // TypeOrmModule.forRoot(databaseConfig())
     KeycloakConnectModule.register({
       authServerUrl: 'http://localhost:8080',
-      realm: 'master',
-      clientId: 'goblinsquire',
-      secret: 'k5jUDHxK8hYsLas5WhosoRuoU5NynAmG',
+      realm: process.env.KEYCLOAK_REALM!,
+      clientId: process.env.KEYCLOAK_CLIENT_ID!,
+      secret: process.env.KEYCLOAK_SECRET!,
     }),
   ],
   controllers: [AppController],
