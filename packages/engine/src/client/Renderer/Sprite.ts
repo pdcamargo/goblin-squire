@@ -2,7 +2,7 @@ import regl from "regl";
 import { ShaderProgram } from "./ShaderProgram";
 import { Container, ContainerProps } from "./Container";
 
-export type SpriteProps = ContainerProps & {
+export type SpriteProps = Omit<ContainerProps, "aspectRatio"> & {
   texture: regl.Texture2D;
   program?: ShaderProgram;
 };
@@ -12,6 +12,7 @@ export class Sprite extends Container {
   program: ShaderProgram;
 
   constructor({
+    id,
     position,
     scale,
     rotation,
@@ -20,6 +21,7 @@ export class Sprite extends Container {
     program,
     parent,
     children,
+    mouseDetectionEnabled,
   }: SpriteProps) {
     super({
       position,
@@ -29,6 +31,8 @@ export class Sprite extends Container {
       parent,
       children,
       aspectRatio: texture.width / texture.height,
+      id,
+      mouseDetectionEnabled,
     });
 
     this.texture = texture;

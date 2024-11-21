@@ -3,6 +3,7 @@ import { Sprite } from "./Sprite";
 import { ShaderProgram } from "./ShaderProgram";
 import { Container } from "./Container";
 import { Camera } from "./Camera";
+import { CameraControl } from "./CameraControl";
 
 export class Renderer {
   #htmlContainer: HTMLElement;
@@ -11,6 +12,7 @@ export class Renderer {
   #rootContainer: Container;
   #camera: Camera;
   #programDrawCommands: Map<string, regl.DrawCommand> = new Map();
+  #cameraControl: CameraControl;
 
   constructor({ container }: { container: HTMLElement }) {
     this.#regl = regl({ container });
@@ -24,13 +26,11 @@ export class Renderer {
 
     this.#htmlContainer = container;
 
-    window.moveCamera = (x, y) => {
-      this.#camera.position = [x, y];
-    };
+    this.#cameraControl = new CameraControl(this.#camera, this.#htmlContainer);
 
-    window.setZoom = (zoom) => {
-      this.#camera.zoom = zoom;
-    };
+    container.addEventListener("mousedown", this.#onMouseDown);
+    container.addEventListener("mouseup", this.#onMouseUp);
+    container.addEventListener("mousemove", this.#onMouseMove);
   }
 
   addSprite(sprite: Sprite) {
@@ -85,8 +85,8 @@ export class Renderer {
 
   render = () => {
     this.#camera.applyTo(this.#rootContainer, [
-      this.#htmlContainer.clientWidth,
-      this.#htmlContainer.clientHeight,
+      this.#regl._gl.drawingBufferWidth,
+      this.#regl._gl.drawingBufferHeight,
     ]);
 
     const groups = this.#groupSpritesByProgram();
@@ -120,6 +120,53 @@ export class Renderer {
 
     return groups;
   }
+
+  #screenToWorld(mouseX: number, mouseY: number): [number, number] {
+    const canvas = this.#regl._gl.canvas as HTMLCanvasElement;
+    const canvasBounds = canvas.getBoundingClientRect();
+
+    const canvasX = mouseX - canvasBounds.left;
+    const canvasY = mouseY - canvasBounds.top;
+
+    const viewportWidth = canvas.width;
+    const viewportHeight = canvas.height;
+
+    const zoom = this.#camera.zoom;
+    const cameraPos = this.#camera.position;
+
+    const rootPos = this.#rootContainer.position;
+
+    const worldX =
+      (canvasX - viewportWidth / 2) / zoom - cameraPos[0] + rootPos[0];
+    const worldY =
+      (viewportHeight / 2 - canvasY) / zoom - cameraPos[1] + rootPos[1];
+
+    return [worldX, worldY];
+  }
+
+  #onMouseDown = (event: MouseEvent) => {
+    const worldPosition = this.#screenToWorld(event.clientX, event.clientY);
+
+    this.#rootContainer.handleMouseEvent(
+      "mousedown",
+      worldPosition,
+      event.button,
+    );
+  };
+
+  #onMouseUp = (event: MouseEvent) => {
+    const worldPosition = this.#screenToWorld(event.clientX, event.clientY);
+    this.#rootContainer.handleMouseEvent(
+      "mouseup",
+      worldPosition,
+      event.button,
+    );
+  };
+
+  #onMouseMove = (event: MouseEvent) => {
+    const worldPosition = this.#screenToWorld(event.clientX, event.clientY);
+    this.#rootContainer.handleMouseEvent("mousemove", worldPosition);
+  };
 
   // Helper for loading textures
   public async loadTexture(url: string) {

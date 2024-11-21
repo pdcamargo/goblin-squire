@@ -72,6 +72,23 @@ export class Application {
         rotation: 0,
         texture: await this.renderer.loadTexture("/dwarve.jpg"),
         pixelPerUnit: 500,
+        mouseDetectionEnabled: true,
+      });
+
+      this.#sprite.on("mousedown", ({ position }) => {
+        console.log("Mouse down", position);
+      });
+
+      this.#sprite.on("mouseup", ({ position }) => {
+        console.log("Mouse up", position);
+      });
+
+      this.#sprite.on("mouseenter", ({ position }) => {
+        console.log("Mouse enter", position);
+      });
+
+      this.#sprite.on("mouseleave", ({ position }) => {
+        console.log("Mouse leave", position);
       });
 
       this.renderer.addSprite(this.#sprite!);

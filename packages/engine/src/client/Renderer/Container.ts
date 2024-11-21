@@ -1,3 +1,5 @@
+import EventEmitter from "eventemitter3";
+
 const generateV4UUID = () => {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -15,6 +17,15 @@ export type ContainerProps = {
   parent?: Container;
   children?: Container[];
   aspectRatio?: number;
+  mouseDetectionEnabled?: boolean;
+};
+
+type ContainerEvents = {
+  mousedown: [{ position: [number, number]; button: number }];
+  mouseup: [{ position: [number, number]; button: number }];
+  mousemove: [{ position: [number, number] }];
+  mouseenter: [{ position: [number, number] }];
+  mouseleave: [{ position: [number, number] }];
 };
 
 /**
@@ -22,7 +33,7 @@ export type ContainerProps = {
  *
  * Containers will be used to group objects together so the stage can render them together.
  */
-export class Container {
+export class Container extends EventEmitter<ContainerEvents> {
   id: string;
 
   position: [number, number];
@@ -31,6 +42,9 @@ export class Container {
   parent: Container | null = null;
   children: Container[] = [];
   pixelPerUnit: number;
+
+  mouseDetectionEnabled = false;
+  mouseOver = false;
 
   aspectRatio = 1;
 
@@ -43,13 +57,18 @@ export class Container {
     children,
     aspectRatio,
     id,
+    mouseDetectionEnabled,
   }: ContainerProps = {}) {
+    super();
+
     this.id = id || generateV4UUID();
 
     this.position = position || [0, 0];
     this.scale = scale || [1, 1];
     this.rotation = rotation || 0;
     this.pixelPerUnit = pixelPerUnit || 100;
+
+    this.mouseDetectionEnabled = mouseDetectionEnabled || false;
 
     if (parent) {
       parent.addChild(this);
@@ -151,6 +170,27 @@ export class Container {
     return found;
   };
 
+  // return true if the mouse event should be stopped
+  traverseMouseDetection = (
+    callback: (container: Container) => boolean | void,
+  ) => {
+    if (this.mouseDetectionEnabled) {
+      const stopPropagation = callback(this);
+      if (stopPropagation) {
+        return true;
+      }
+    }
+
+    for (const child of this.children) {
+      const stopPropagation = child.traverseMouseDetection(callback);
+      if (stopPropagation) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   addChild = (child: Container) => {
     child.parent = this;
     this.children.push(child);
@@ -200,6 +240,81 @@ export class Container {
       const [localX, localY] = this.getLocalScale();
       return [parentX * localX, parentY * localY];
     }
+
     return this.getLocalScale();
   };
+
+  containsPoint(mousePosition: [number, number]): boolean {
+    const [mouseX, mouseY] = mousePosition;
+    const [worldX, worldY] = this.getWorldPosition();
+    const [scaleX, scaleY] = this.getWorldScale();
+
+    const halfWidth = scaleX / 2;
+    const halfHeight = scaleY / 2;
+
+    const bounds = {
+      minX: worldX - halfWidth,
+      maxX: worldX + halfWidth,
+      minY: worldY - halfHeight,
+      maxY: worldY + halfHeight,
+    };
+
+    console.log(
+      JSON.stringify(
+        {
+          mouseX,
+          mouseY,
+          worldX,
+          worldY,
+          halfWidth,
+          halfHeight,
+          bounds,
+          isInside:
+            mouseX >= bounds.minX &&
+            mouseX <= bounds.maxX &&
+            mouseY >= bounds.minY &&
+            mouseY <= bounds.maxY,
+        },
+        null,
+        2,
+      ),
+    );
+
+    return (
+      mouseX >= bounds.minX &&
+      mouseX <= bounds.maxX &&
+      mouseY >= bounds.minY &&
+      mouseY <= bounds.maxY
+    );
+  }
+
+  handleMouseEvent(
+    eventName: keyof ContainerEvents,
+    mousePosition: [number, number],
+    button?: number,
+  ): boolean {
+    return this.traverseMouseDetection((container) => {
+      const isInside = container.containsPoint(mousePosition);
+
+      if (isInside) {
+        // Emit mousedown, mouseup, mousemove
+        container.emit(eventName, {
+          position: mousePosition,
+          ...(button !== undefined ? { button } : {}),
+        });
+
+        // Handle mouseenter
+        if (!container.mouseOver) {
+          container.mouseOver = true;
+          container.emit("mouseenter", { position: mousePosition });
+        }
+      } else if (container.mouseOver) {
+        // Handle mouseleave
+        container.mouseOver = false;
+        container.emit("mouseleave", { position: mousePosition });
+      }
+
+      return isInside; // Stop propagation if the event was handled
+    });
+  }
 }
