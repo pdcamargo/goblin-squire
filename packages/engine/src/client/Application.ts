@@ -2,6 +2,7 @@ import { Assert } from "./Assert";
 import { ApplicationNotInitializedError } from "./Errors";
 
 import regl from "regl";
+import { Renderer, Sprite } from "./Renderer";
 
 export type ApplicationInitOptions = {
   gameId: string;
@@ -12,70 +13,6 @@ export type ApplicationInitOptions = {
 export type DrawTriangleProps = {
   color: number[];
 };
-
-class Renderer {
-  #regl: regl.Regl;
-  #onRender: (opt: regl.DefaultContext) => void;
-
-  drawTriangle: regl.DrawCommand<regl.DefaultContext, DrawTriangleProps>;
-
-  constructor({
-    container,
-    onRender,
-  }: {
-    container: HTMLElement;
-    onRender: (opt: regl.DefaultContext) => void;
-  }) {
-    this.#regl = regl({
-      container,
-    });
-
-    this.#onRender = onRender;
-
-    this.#regl.frame((opt) => {
-      this.#regl.clear({
-        color: [0, 0, 0, 0],
-        depth: 1,
-      });
-
-      this.#onRender(opt);
-    });
-
-    this.drawTriangle = this.#regl({
-      frag: `
-        precision mediump float;
-
-        uniform vec4 color;
-
-        void main() {
-          gl_FragColor = color;
-        }
-      `,
-
-      vert: `
-        precision mediump float;
-        attribute vec2 position;
-        void main() {
-          gl_Position = vec4(position, 0, 1);
-        }
-      `,
-
-      attributes: {
-        position: this.#regl.buffer([
-          [-2, -2], // no need to flatten nested arrays, regl automatically
-          [4, -2], // unrolls them into a typedarray (default Float32)
-          [4, 4],
-        ]),
-      },
-
-      uniforms: {
-        color: this.#regl.prop<DrawTriangleProps, "color">("color"),
-      },
-
-      count: 3,
-    });
-  }
-}
 
 export class Application {
   #hasInitialized = false;
@@ -115,23 +52,30 @@ export class Application {
 
     this.#renderer = new Renderer({
       container: htmlContainer,
-      onRender: this.#onRender,
+      // onRender: this.#onRender,
     });
     this.#gameId = gameId;
     this.#locale = locale;
 
     this.#hasInitialized = true;
+
+    this.#onRender();
   }
 
-  #onRender = ({ time }: regl.DefaultContext) => {
-    this.renderer.drawTriangle({
-      color: [
-        Math.cos(time * 1.2),
-        Math.sin(time * 0.5),
-        Math.cos(time * -0.1),
-        1.0,
-      ],
-    });
+  #sprite: Sprite | null = null;
+
+  #onRender = async () => {
+    if (this.#sprite === null) {
+      this.#sprite = new Sprite({
+        position: [0, 0],
+        scale: [1, 1],
+        rotation: 0,
+        texture: await this.renderer.loadTexture("/dwarve.jpg"),
+        pixelPerUnit: 500,
+      });
+
+      this.renderer.addSprite(this.#sprite!);
+    }
   };
 
   public get gameId() {
