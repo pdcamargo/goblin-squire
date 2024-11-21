@@ -33,6 +33,7 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
+                  <User2 />
                   Select Workspace
                   <ChevronDown className="ml-auto" />
                 </SidebarMenuButton>
