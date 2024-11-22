@@ -5,6 +5,7 @@ import { Container } from "./Container";
 import { Camera } from "./Camera";
 import { CameraControl } from "./CameraControl";
 import { mat4, vec4 } from "gl-matrix";
+import { Line } from "./Line";
 
 export class Renderer {
   #htmlContainer: HTMLElement;
@@ -34,7 +35,7 @@ export class Renderer {
     container.addEventListener("mousemove", this.#onMouseMove);
   }
 
-  addSprite(sprite: Sprite) {
+  addContainer(sprite: Sprite | Line) {
     this.#rootContainer.addChild(sprite);
 
     // Ensure the ShaderProgram's draw command is registered
@@ -100,12 +101,27 @@ export class Renderer {
     this.#programDrawCommands.set(program.id, drawCommand);
   }
 
-  removeSprite(sprite: Sprite) {
-    this.#rootContainer.removeById(sprite.id);
+  removeContainer(container: Container) {
+    this.#rootContainer.removeById(container.id);
   }
 
   render = () => {
     const groups = this.#groupSpritesByProgram();
+
+    const lines = this.#rootContainer.getAllByType(Line, true);
+
+    for (const line of lines) {
+      const drawCommand = this.#programDrawCommands.get(line.getProgramId());
+      if (drawCommand) {
+        drawCommand({
+          position: line.getLineBuffer(this.#regl),
+          uPosition: line.getWorldPosition(),
+          uScale: line.getWorldScale(),
+          uRotation: line.getWorldRotation(),
+          uColor: line.color,
+        });
+      }
+    }
 
     for (const [programId, sprites] of groups) {
       const drawCommand = this.#programDrawCommands.get(programId);
