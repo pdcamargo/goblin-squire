@@ -7,6 +7,31 @@ import { CameraControl } from "./CameraControl";
 import { mat4, vec4 } from "gl-matrix";
 import { Line } from "./Line";
 
+function generateGridLines(
+  gridSpacing: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  scale: number,
+) {
+  const halfWidth = (canvasWidth / 2) * scale;
+  const halfHeight = (canvasHeight / 2) * scale;
+  const lines = [];
+
+  // Generate vertical lines
+  for (let x = -halfWidth; x <= halfWidth; x += gridSpacing) {
+    lines.push([x, -halfHeight, 0]);
+    lines.push([x, halfHeight, 0]);
+  }
+
+  // Generate horizontal lines
+  for (let y = -halfHeight; y <= halfHeight; y += gridSpacing) {
+    lines.push([-halfWidth, y, 0]);
+    lines.push([halfWidth, y, 0]);
+  }
+
+  return lines.flat();
+}
+
 export class Renderer {
   #htmlContainer: HTMLElement;
 
@@ -15,6 +40,8 @@ export class Renderer {
   #camera: Camera;
   #programDrawCommands: Map<string, regl.DrawCommand> = new Map();
   #cameraControl: CameraControl;
+
+  #drawGrid: regl.DrawCommand;
 
   constructor({ container }: { container: HTMLElement }) {
     this.#regl = regl({ container });
@@ -29,6 +56,53 @@ export class Renderer {
     this.#htmlContainer = container;
 
     this.#cameraControl = new CameraControl(this.#camera, this.#htmlContainer);
+
+    this.#drawGrid = this.#regl({
+      vert: `
+        precision mediump float;
+        uniform mat4 uProjectionView;
+        attribute vec3 position;
+    
+        void main() {
+          gl_Position = uProjectionView * vec4(position, 1.0);
+        }
+      `,
+      frag: `
+        precision mediump float;
+    
+        void main() {
+          gl_FragColor = vec4(0.1, 0.1, 0.1, 0.1); // Grid line color
+        }
+      `,
+      attributes: {
+        position: () => {
+          const scale = 3; // Extend grid to canvas size * 3
+          const canvasWidth = this.#regl._gl.canvas.width;
+          const canvasHeight = this.#regl._gl.canvas.height;
+          return generateGridLines(25, canvasWidth, canvasHeight, scale); // Adjust spacing as needed
+        },
+      },
+      uniforms: {
+        uProjectionView: () => {
+          const scale = 3; // Extend grid to canvas size * 3
+          const canvasWidth = this.#regl._gl.canvas.width;
+          const canvasHeight = this.#regl._gl.canvas.height;
+          return this.#camera.getProjectionViewMatrix(
+            canvasWidth,
+            canvasHeight,
+          );
+        },
+      },
+      primitive: "lines",
+      count: ({ viewportWidth, viewportHeight }) => {
+        const scale = 3; // Extend grid to canvas size * 3
+        const canvasWidth = this.#regl._gl.canvas.width;
+        const canvasHeight = this.#regl._gl.canvas.height;
+        return (
+          generateGridLines(25, canvasWidth, canvasHeight, scale).length / 3
+        );
+      },
+    });
 
     container.addEventListener("mousedown", this.#onMouseDown);
     container.addEventListener("mouseup", this.#onMouseUp);
@@ -106,22 +180,24 @@ export class Renderer {
   }
 
   render = () => {
+    // const lines = this.#rootContainer.getAllByType(Line, true);
+
+    // for (const line of lines) {
+    //   const drawCommand = this.#programDrawCommands.get(line.getProgramId());
+    //   if (drawCommand) {
+    //     drawCommand({
+    //       position: line.getLineBuffer(this.#regl),
+    //       uPosition: line.getWorldPosition(),
+    //       uScale: line.getWorldScale(),
+    //       uRotation: line.getWorldRotation(),
+    //       uColor: line.color,
+    //     });
+    //   }
+    // }
+
+    this.#drawGrid();
+
     const groups = this.#groupSpritesByProgram();
-
-    const lines = this.#rootContainer.getAllByType(Line, true);
-
-    for (const line of lines) {
-      const drawCommand = this.#programDrawCommands.get(line.getProgramId());
-      if (drawCommand) {
-        drawCommand({
-          position: line.getLineBuffer(this.#regl),
-          uPosition: line.getWorldPosition(),
-          uScale: line.getWorldScale(),
-          uRotation: line.getWorldRotation(),
-          uColor: line.color,
-        });
-      }
-    }
 
     for (const [programId, sprites] of groups) {
       const drawCommand = this.#programDrawCommands.get(programId);

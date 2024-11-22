@@ -112,7 +112,7 @@ export class Application {
         scale: [1, 1],
         rotation: 0,
         texture: await this.renderer.loadTexture("/dwarve.jpg"),
-        pixelPerUnit: 3,
+        pixelPerUnit: 100,
         mouseDetectionEnabled: true,
       });
 
