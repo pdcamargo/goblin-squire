@@ -41,9 +41,9 @@ export class Sprite extends Container {
       program ||
       new ShaderProgram({
         uniforms: {
-          spritePosition: () => this.getWorldPosition(),
-          spriteScale: () => this.getWorldScale(),
-          spriteRotation: () => this.getWorldRotation(),
+          uPosition: () => this.getWorldPosition(),
+          uScale: () => this.getWorldScale(),
+          uRotation: () => this.getWorldRotation(),
           texture: () => this.texture,
         },
       });

@@ -259,27 +259,6 @@ export class Container extends EventEmitter<ContainerEvents> {
       maxY: worldY + halfHeight,
     };
 
-    console.log(
-      JSON.stringify(
-        {
-          mouseX,
-          mouseY,
-          worldX,
-          worldY,
-          halfWidth,
-          halfHeight,
-          bounds,
-          isInside:
-            mouseX >= bounds.minX &&
-            mouseX <= bounds.maxX &&
-            mouseY >= bounds.minY &&
-            mouseY <= bounds.maxY,
-        },
-        null,
-        2,
-      ),
-    );
-
     return (
       mouseX >= bounds.minX &&
       mouseX <= bounds.maxX &&

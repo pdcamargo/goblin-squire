@@ -35,32 +35,19 @@ export class ShaderProgram {
   static defaultVertexShader(): string {
     return `
       precision mediump float;
+
       attribute vec2 position;
       attribute vec2 uv;
-      uniform vec2 spritePosition;
-      uniform vec2 spriteScale;
-      uniform float spriteRotation;
-      uniform vec2 resolution;
+
+      uniform mat4 uProjectionView;
+      uniform mat4 modelMatrix;
+
       varying vec2 vUV;
 
       void main() {
-        float cosA = cos(spriteRotation);
-        float sinA = sin(spriteRotation);
+        vec4 worldPosition = modelMatrix * vec4(position, 0.0, 1.0);
+        gl_Position = uProjectionView * worldPosition;
 
-        vec2 scaledPosition = (position * spriteScale);
-        vec2 rotatedPosition = vec2(
-          cosA * scaledPosition.x - sinA * scaledPosition.y,
-          sinA * scaledPosition.x + cosA * scaledPosition.y
-        );
-
-        vec2 finalPosition = rotatedPosition + spritePosition;
-
-        vec2 normalizedPosition = vec2(
-          (finalPosition.x / resolution.x) * 2.0 - 1.0,
-          1.0 - (finalPosition.y / resolution.y) * 2.0
-        );
-
-        gl_Position = vec4(normalizedPosition, 0, 1);
         vUV = uv;
       }
     `;

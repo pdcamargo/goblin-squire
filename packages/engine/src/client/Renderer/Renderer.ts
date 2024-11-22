@@ -4,6 +4,7 @@ import { ShaderProgram } from "./ShaderProgram";
 import { Container } from "./Container";
 import { Camera } from "./Camera";
 import { CameraControl } from "./CameraControl";
+import { mat4, vec4 } from "gl-matrix";
 
 export class Renderer {
   #htmlContainer: HTMLElement;
@@ -69,10 +70,30 @@ export class Renderer {
         ...program.uniforms,
         uTime: ({ time }) => time,
         uTick: ({ tick }) => tick,
-        resolution: ({ viewportWidth, viewportHeight }) => [
-          viewportWidth,
-          viewportHeight,
-        ],
+        uProjectionView: () =>
+          this.#camera.getProjectionViewMatrix(
+            this.#regl._gl.canvas.width,
+            this.#regl._gl.canvas.height,
+          ),
+        modelMatrix: (context, props: any) => {
+          const position = props.uPosition;
+          const scale = props.uScale;
+          const rotation = props.uRotation;
+
+          const modelMatrix = mat4.create();
+
+          mat4.translate(modelMatrix, modelMatrix, [
+            position[0],
+            position[1],
+            0,
+          ]);
+
+          mat4.rotateZ(modelMatrix, modelMatrix, rotation);
+
+          mat4.scale(modelMatrix, modelMatrix, [scale[0], scale[1], 1]);
+
+          return modelMatrix;
+        },
       },
     });
 
@@ -84,11 +105,6 @@ export class Renderer {
   }
 
   render = () => {
-    this.#camera.applyTo(this.#rootContainer, [
-      this.#regl._gl.drawingBufferWidth,
-      this.#regl._gl.drawingBufferHeight,
-    ]);
-
     const groups = this.#groupSpritesByProgram();
 
     for (const [programId, sprites] of groups) {
@@ -97,9 +113,9 @@ export class Renderer {
       for (const sprite of sprites) {
         drawCommand?.({
           texture: sprite.texture,
-          spritePosition: sprite.getWorldPosition(),
-          spriteScale: sprite.getWorldScale(),
-          spriteRotation: sprite.getWorldRotation(),
+          uPosition: sprite.getWorldPosition(),
+          uScale: sprite.getWorldScale(),
+          uRotation: sprite.getWorldRotation(),
         });
       }
     }
@@ -128,20 +144,35 @@ export class Renderer {
     const canvasX = mouseX - canvasBounds.left;
     const canvasY = mouseY - canvasBounds.top;
 
-    const viewportWidth = canvas.width;
-    const viewportHeight = canvas.height;
+    // Convert to normalized device coordinates (NDC)
+    const ndcX = (canvasX / canvasBounds.width) * 2 - 1;
+    const ndcY = 1 - (canvasY / canvasBounds.height) * 2;
 
-    const zoom = this.#camera.zoom;
-    const cameraPos = this.#camera.position;
+    // Create a vec4 for the NDC position
+    const ndcPosition = vec4.fromValues(ndcX, ndcY, 0, 1);
 
-    const rootPos = this.#rootContainer.position;
+    // Get the inverse of the projection-view matrix
+    const projectionViewMatrix = this.#camera.getProjectionViewMatrix(
+      canvas.width,
+      canvas.height,
+    );
+    const inverseProjectionView = mat4.invert(
+      mat4.create(),
+      projectionViewMatrix,
+    );
+    if (!inverseProjectionView) {
+      throw new Error("Failed to invert projection-view matrix");
+    }
 
-    const worldX =
-      (canvasX - viewportWidth / 2) / zoom - cameraPos[0] + rootPos[0];
-    const worldY =
-      (viewportHeight / 2 - canvasY) / zoom - cameraPos[1] + rootPos[1];
+    // Transform NDC back to world space
+    const worldPosition = vec4.transformMat4(
+      vec4.create(),
+      ndcPosition,
+      inverseProjectionView,
+    );
 
-    return [worldX, worldY];
+    // Return the x, y world coordinates
+    return [worldPosition[0], worldPosition[1]];
   }
 
   #onMouseDown = (event: MouseEvent) => {
