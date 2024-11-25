@@ -40,12 +40,12 @@ export class ShaderProgram {
       attribute vec2 uv;
 
       uniform mat4 uProjectionView;
-      uniform mat4 modelMatrix;
+      uniform mat4 uModelMatrix;
 
       varying vec2 vUV;
 
       void main() {
-        vec4 worldPosition = modelMatrix * vec4(position, 0.0, 1.0);
+        vec4 worldPosition = uModelMatrix * vec4(position, 0.0, 1.0);
         gl_Position = uProjectionView * worldPosition;
 
         vUV = uv;

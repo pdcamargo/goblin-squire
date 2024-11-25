@@ -83,7 +83,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     }
   }
 
-  findById = (id: string, recursive = true): Container | null => {
+  public findById = (id: string, recursive = true): Container | null => {
     if (this.id === id) {
       return this;
     }
@@ -104,7 +104,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     return null;
   };
 
-  removeById = (id: string, recursive = true) => {
+  public removeById = (id: string, recursive = true) => {
     const index = this.children.findIndex((child) => child.id === id);
     if (index >= 0) {
       const child = this.children[index]!;
@@ -122,7 +122,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     }
   };
 
-  getByType = <T extends Container>(
+  public getByType = <T extends Container>(
     type: new (...args: any[]) => T,
     recursive = true,
   ): T | null => {
@@ -146,7 +146,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     return null;
   };
 
-  getAllByType = <T extends Container>(
+  public getAllByType = <T extends Container>(
     type: new (...args: any[]) => T,
     recursive = true,
   ): T[] => {
@@ -170,8 +170,12 @@ export class Container extends EventEmitter<ContainerEvents> {
     return found;
   };
 
-  // return true if the mouse event should be stopped
-  traverseMouseDetection = (
+  /**
+   * Traverse the container and its children to detect if the mouse is inside any of them.
+   *
+   * @param callback A function that will be called for each container. If the function returns true, the traversal will stop.
+   */
+  public traverseMouseDetection = (
     callback: (container: Container) => boolean | void,
   ) => {
     if (this.mouseDetectionEnabled) {
@@ -191,12 +195,12 @@ export class Container extends EventEmitter<ContainerEvents> {
     return false;
   };
 
-  addChild = (child: Container) => {
+  public addChild = (child: Container) => {
     child.parent = this;
     this.children.push(child);
   };
 
-  removeChild = (child: Container) => {
+  public removeChild = (child: Container) => {
     const index = this.children.indexOf(child);
     if (index >= 0) {
       child.parent = null;
@@ -204,7 +208,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     }
   };
 
-  getWorldPosition = (): [number, number] => {
+  public getWorldPosition = (): [number, number] => {
     if (this.parent) {
       const [parentX, parentY] = this.parent.getWorldPosition();
       const [localX, localY] = this.getLocalPosition();
@@ -213,28 +217,28 @@ export class Container extends EventEmitter<ContainerEvents> {
     return this.getLocalPosition();
   };
 
-  getWorldRotation = (): number => {
+  public getWorldRotation = (): number => {
     if (this.parent) {
       return this.rotation + this.parent.getWorldRotation();
     }
     return this.rotation;
   };
 
-  getLocalScale = (): [number, number] => {
+  public getLocalScale = (): [number, number] => {
     return [
       this.scale[0] * this.pixelPerUnit,
       (this.scale[1] * this.pixelPerUnit) / this.aspectRatio,
     ];
   };
 
-  getLocalPosition = (): [number, number] => {
+  public getLocalPosition = (): [number, number] => {
     return [
       this.position[0] * this.pixelPerUnit,
       this.position[1] * this.pixelPerUnit,
     ];
   };
 
-  getWorldScale = (): [number, number] => {
+  public getWorldScale = (): [number, number] => {
     if (this.parent) {
       const [parentX, parentY] = this.parent.getWorldScale();
       const [localX, localY] = this.getLocalScale();
@@ -244,7 +248,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     return this.getLocalScale();
   };
 
-  containsPoint(mousePosition: [number, number]): boolean {
+  public containsPoint(mousePosition: [number, number]): boolean {
     const [mouseX, mouseY] = mousePosition;
     const [worldX, worldY] = this.getWorldPosition();
     const [scaleX, scaleY] = this.getWorldScale();
@@ -267,7 +271,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     );
   }
 
-  handleMouseEvent(
+  public handleMouseEvent(
     eventName: keyof ContainerEvents,
     mousePosition: [number, number],
     button?: number,
@@ -295,5 +299,25 @@ export class Container extends EventEmitter<ContainerEvents> {
 
       return isInside; // Stop propagation if the event was handled
     });
+  }
+
+  public getWorldBounds(): {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  } {
+    const [worldX, worldY] = this.getWorldPosition();
+    const [scaleX, scaleY] = this.getWorldScale();
+
+    const halfWidth = scaleX / 2;
+    const halfHeight = scaleY / 2;
+
+    return {
+      minX: worldX - halfWidth,
+      maxX: worldX + halfWidth,
+      minY: worldY - halfHeight,
+      maxY: worldY + halfHeight,
+    };
   }
 }

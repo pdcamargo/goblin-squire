@@ -5,3 +5,11 @@ export class ApplicationNotInitializedError extends Error {
     Object.setPrototypeOf(this, ApplicationNotInitializedError.prototype);
   }
 }
+
+export class AssertionError extends Error {
+  constructor(message: string) {
+    super(message);
+
+    Object.setPrototypeOf(this, AssertionError.prototype);
+  }
+}

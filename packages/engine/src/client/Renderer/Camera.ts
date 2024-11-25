@@ -12,7 +12,7 @@ export class Camera extends Container {
     this.zoom = 1;
   }
 
-  getViewMatrix(): mat4 {
+  public getViewMatrix(): mat4 {
     const view = mat4.create();
 
     // Translate based on camera position
@@ -27,7 +27,7 @@ export class Camera extends Container {
     return view;
   }
 
-  getProjectionMatrix(canvasWidth: number, canvasHeight: number): mat4 {
+  public getProjectionMatrix(canvasWidth: number, canvasHeight: number): mat4 {
     const projection = mat4.create();
 
     // Orthographic projection
@@ -44,7 +44,7 @@ export class Camera extends Container {
     return projection;
   }
 
-  getProjectionViewMatrix(width: number, height: number): mat4 {
+  public getProjectionViewMatrix(width: number, height: number): mat4 {
     const projectionMatrix = mat4.create();
     const viewMatrix = mat4.create();
 
@@ -72,5 +72,44 @@ export class Camera extends Container {
     mat4.multiply(projectionViewMatrix, projectionMatrix, viewMatrix);
 
     return projectionViewMatrix;
+  }
+
+  public getVisibleBounds(
+    canvasWidth: number,
+    canvasHeight: number,
+  ): {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  } {
+    const halfWidth = canvasWidth / 2 / this.zoom;
+    const halfHeight = canvasHeight / 2 / this.zoom;
+
+    const centerX = this.position[0];
+    const centerY = this.position[1];
+
+    return {
+      minX: centerX - halfWidth,
+      maxX: centerX + halfWidth,
+      minY: centerY - halfHeight,
+      maxY: centerY + halfHeight,
+    };
+  }
+
+  public isContainerVisible(
+    target: Container,
+    canvasWidth: number,
+    canvasHeight: number,
+  ): boolean {
+    const cameraBounds = this.getVisibleBounds(canvasWidth, canvasHeight);
+    const targetBounds = target.getWorldBounds();
+
+    return !(
+      targetBounds.maxX < cameraBounds.minX ||
+      targetBounds.minX > cameraBounds.maxX ||
+      targetBounds.maxY < cameraBounds.minY ||
+      targetBounds.minY > cameraBounds.maxY
+    );
   }
 }

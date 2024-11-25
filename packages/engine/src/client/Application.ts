@@ -1,49 +1,7 @@
 import { Assert } from "./Assert";
 import { ApplicationNotInitializedError } from "./Errors";
 
-import regl from "regl";
 import { Renderer, Sprite } from "./Renderer";
-import { Line } from "./Renderer/Line";
-
-export function createGrid(
-  renderer: Renderer,
-  width: number,
-  height: number,
-  spacing: number,
-  color: [number, number, number] = [0.5, 0.5, 0.5],
-): Line[] {
-  const lines: Line[] = [];
-
-  // Horizontal lines
-  for (let y = -height / 2; y <= height / 2; y += spacing) {
-    const line = new Line({
-      position: [0, 0],
-      points: [
-        [-width / 2, y],
-        [width / 2, y],
-      ],
-      color,
-    });
-    renderer.addContainer(line);
-    lines.push(line);
-  }
-
-  // Vertical lines
-  for (let x = -width / 2; x <= width / 2; x += spacing) {
-    const line = new Line({
-      position: [0, 0],
-      points: [
-        [x, -height / 2],
-        [x, height / 2],
-      ],
-      color,
-    });
-    renderer.addContainer(line);
-    lines.push(line);
-  }
-
-  return lines;
-}
 
 export type ApplicationInitOptions = {
   gameId: string;
@@ -86,10 +44,7 @@ export class Application {
       `HTML container with selector '${htmlContainerSelector}' not found`,
     );
 
-    Assert.isOfType(
-      htmlContainer,
-      (value): value is HTMLElement => value instanceof HTMLElement,
-    );
+    Assert.isHtmlElement(htmlContainer);
 
     this.#renderer = new Renderer({
       container: htmlContainer,
@@ -134,7 +89,7 @@ export class Application {
 
       this.renderer.addContainer(this.#sprite!);
 
-      createGrid(this.renderer, 500, 500, 50);
+      this.renderer.selectContainer(this.#sprite);
     }
   };
 

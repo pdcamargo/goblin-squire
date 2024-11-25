@@ -1,3 +1,5 @@
+import { AssertionError } from "./Errors";
+
 export class Assert {
   /**
    * Asserts that the value is not `null`.
@@ -8,7 +10,7 @@ export class Assert {
     message?: string,
   ): asserts value is Exclude<T, null> {
     if (value === null) {
-      throw new Error(message || "Value should not be null");
+      throw new AssertionError(message || "Value should not be null");
     }
   }
 
@@ -21,7 +23,7 @@ export class Assert {
     message?: string,
   ): asserts value is Exclude<T, undefined> {
     if (value === undefined) {
-      throw new Error(message || "Value should not be undefined");
+      throw new AssertionError(message || "Value should not be undefined");
     }
   }
 
@@ -34,7 +36,9 @@ export class Assert {
     message?: string,
   ): asserts value is NonNullable<T> {
     if (value === null || value === undefined) {
-      throw new Error(message || "Value should not be null or undefined");
+      throw new AssertionError(
+        message || "Value should not be null or undefined",
+      );
     }
   }
 
@@ -47,7 +51,7 @@ export class Assert {
     message?: string,
   ): asserts condition {
     if (!condition) {
-      throw new Error(message || "Assertion failed");
+      throw new AssertionError(message || "Assertion failed");
     }
   }
 
@@ -60,7 +64,7 @@ export class Assert {
     message?: string,
   ): asserts condition {
     if (condition) {
-      throw new Error(message || "Assertion failed");
+      throw new AssertionError(message || "Assertion failed");
     }
   }
 
@@ -74,7 +78,80 @@ export class Assert {
     message?: string,
   ): asserts value is T {
     if (!typeGuard(value)) {
-      throw new Error(message || "Value is not of the expected type");
+      throw new AssertionError(message || "Value is not of the expected type");
+    }
+  }
+
+  /**
+   * Asserts that the value is a HTML element of any kind.
+   * Narrows the type from `T` to `HTMLElement`.
+   */
+  public static isHtmlElement<T extends HTMLElement>(
+    value: unknown,
+    message?: string,
+  ): asserts value is T {
+    if (!(value instanceof HTMLElement)) {
+      throw new AssertionError(message || "Value is not an HTML element");
+    }
+  }
+
+  /**
+   * Asserts that the value is a HTML element with a specific instance type.
+   * Narrows the type from `T` to `K`.
+   */
+  public static isHtmlElementOfType<T extends HTMLElement, K extends T>(
+    value: unknown,
+    type: new () => K,
+    message?: string,
+  ): asserts value is K {
+    if (!(value instanceof type)) {
+      throw new AssertionError(
+        message || "Value is not an HTML element of the expected type",
+      );
+    }
+  }
+
+  /**
+   * Asserts that the value is an array of numbers.
+   * Narrows the type from `T` to `number[]`.
+   */
+  public static isNumberArray<T extends number[]>(
+    value: unknown,
+    message?: string,
+  ): asserts value is T {
+    if (!Array.isArray(value) || !value.every((v) => typeof v === "number")) {
+      throw new AssertionError(message || "Value is not an array of numbers");
+    }
+  }
+
+  /**
+   * Asserts that the value is an array of two numbers.
+   * Narrows the type from `T` to `[number, number]`.
+   */
+  public static isVector2Array<T extends [number, number]>(
+    value: unknown,
+    message?: string,
+  ): asserts value is T {
+    if (
+      !Array.isArray(value) ||
+      value.length !== 2 ||
+      !value.every((v) => typeof v === "number")
+    ) {
+      throw new AssertionError(
+        message || "Value is not an array of two numbers",
+      );
+    }
+  }
+
+  /**
+   * Asserts that the value is a number
+   */
+  public static isNumber(
+    value: unknown,
+    message?: string,
+  ): asserts value is number {
+    if (typeof value !== "number") {
+      throw new AssertionError(message || "Value is not a number");
     }
   }
 }
