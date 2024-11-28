@@ -6,8 +6,7 @@ export default function HomePage() {
   const t = useTranslations();
   return (
     <div>
-      <h1>{t("helloWorld")}</h1>
-      <Link href="/about">{t("helloWorld")}</Link>
+      <Link href="/game?worldId=World Test">Go to prototype game page</Link>
     </div>
   );
 }

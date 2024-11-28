@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import styles from "./page.module.css";
-import { useQuery } from "@tanstack/react-query";
-
 import { Button } from "@repo/ui/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+
+import styles from "./page.module.css";
 
 async function getHello() {
   return new Promise((resolve) => {

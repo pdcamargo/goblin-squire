@@ -115,10 +115,6 @@ export class Renderer {
     container.addEventListener("mouseup", this.#onMouseUp);
     container.addEventListener("mousemove", this.#onMouseMove);
 
-    this.#regl.frame(() => {
-      this.render();
-    });
-
     this.#drawLine = this.#regl({
       vert: `
         precision mediump float;
@@ -145,6 +141,7 @@ export class Renderer {
         ]),
       },
       uniforms: {
+        // @ts-expect-error -- TODO: props not well typed here, won't do this right now because it's still a prototype
         uColor: (_, props) => props.color,
         uProjectionView: () =>
           this.#camera.getProjectionViewMatrix(
@@ -486,6 +483,12 @@ export class Renderer {
 
       image.onerror = reject;
       image.src = url;
+    });
+  }
+
+  public run() {
+    this.#regl.frame(() => {
+      this.render();
     });
   }
 }

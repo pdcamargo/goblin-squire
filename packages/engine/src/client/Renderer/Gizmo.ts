@@ -15,8 +15,6 @@ export class Gizmo {
   }
 
   public draw() {
-    console.log("Drawing gizmo");
-
     const position = this.#target.getWorldPosition();
     const size = 1500; // Gizmo size in world units
 

@@ -43,6 +43,42 @@ export class Assert {
   }
 
   /**
+   * Asserts that the value is `null`.
+   */
+  public static isNull(
+    value: unknown,
+    message?: string,
+  ): asserts value is null {
+    if (value !== null) {
+      throw new AssertionError(message || "Value should be null");
+    }
+  }
+
+  /**
+   * Asserts that the value is `undefined`.
+   */
+  public static isUndefined(
+    value: unknown,
+    message?: string,
+  ): asserts value is undefined {
+    if (value !== undefined) {
+      throw new AssertionError(message || "Value should be undefined");
+    }
+  }
+
+  /**
+   * Asserts that the value is either `null` or `undefined`.
+   */
+  public static isNullOrUndefined(
+    value: unknown,
+    message?: string,
+  ): asserts value is null | undefined {
+    if (value !== null && value !== undefined) {
+      throw new AssertionError(message || "Value should be null or undefined");
+    }
+  }
+
+  /**
    * Asserts that the condition is `true`.
    * Useful for custom assertions.
    */
@@ -152,6 +188,55 @@ export class Assert {
   ): asserts value is number {
     if (typeof value !== "number") {
       throw new AssertionError(message || "Value is not a number");
+    }
+  }
+
+  /**
+   * Asserts that the value is a string
+   */
+  public static isString(
+    value: unknown,
+    message?: string,
+  ): asserts value is string {
+    if (typeof value !== "string") {
+      throw new AssertionError(message || "Value is not a string");
+    }
+  }
+
+  /**
+   * Asserts that the value is a function
+   */
+  public static isFunction(
+    value: unknown,
+    message?: string,
+  ): asserts value is Function {
+    if (typeof value !== "function") {
+      throw new AssertionError(message || "Value is not a function");
+    }
+  }
+
+  /**
+   * Asserts that the value is an absolute path
+   */
+  public static isAbsolutePath(
+    value: unknown,
+    message?: string,
+  ): asserts value is string {
+    if (typeof value !== "string" || !value.startsWith("/")) {
+      throw new AssertionError(message || "Value is not an absolute path");
+    }
+  }
+
+  /**
+   * Asserts that the value is included in the provided array or enum values
+   */
+  public static isEnumValue<T extends string | number>(
+    value: unknown,
+    values: T[] | ReadonlyArray<T>,
+    message?: string,
+  ): asserts value is T {
+    if (!values.includes(value as T)) {
+      throw new AssertionError(message || "Value is not an enum value");
     }
   }
 }

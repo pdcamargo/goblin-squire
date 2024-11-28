@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ModuleManifestOptions",
+  "type": "object",
+  "required": ["id", "name", "description", "version"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique identifier of the module.\n\nFor local development or manual installation, this can be any string. But if you are planning to publish the module to the repository for easier installation, this value will be checked for uniqueness before publishing."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The name of the module. It can be any string but can't be empty."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The description of the module. It can be any string but can't be empty. Use this to describe what the module does and how it can be used. `Markdown` is supported."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+      "description": "The version of the module.\n\nThis should follow the semantic versioning format and will throw an error if it doesn't.\n\nThe semantic versioning is used to better communicate the changes in the module to the users."
+    },
+    "compatibility": {
+      "description": "The compatibility key is used to specify the minimum and maximum versions of the engine required for the module to work. It can also be used to specify a list of versions that have been verified to work with the module to make the users feel more confident about using the module.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minimumVersion": {
+              "type": "string",
+              "description": "Minimum version of the engine required for the module to work.\n\nThis can be optional, but if both `minimumVersion` and `maximumVersion` are empty, it will throw an error. In this case, you should remove the `compatibility` key from the manifest."
+            },
+            "maximumVersion": {
+              "type": "string",
+              "description": "Maximum version of the engine required for the module to work.\n\nThis can be optional, but if both `minimumVersion` and `maximumVersion` are empty, it will throw an error. In this case, you should remove the `compatibility` key from the manifest."
+            },
+            "verifiedVersions": {
+              "description": "List of versions that have been verified to work with the module.\n\nThis will simply be a badge on the module's page and will not affect compatibility checks. So even though it's optional, it's recommended to include it.",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "anyOf": [
+            { "required": ["minimumVersion"] },
+            { "required": ["maximumVersion"] }
+          ]
+        },
+        {
+          "type": "string",
+          "enum": ["all", "lts"],
+          "description": "If this key is set to \"all\", it means that the module is compatible with all versions. And it means all of your changes are backward-compatible.\n\nIf this key is set to \"lts\", it means that the module is compatible with only the LTS version and changes are not necessarily backward-compatible.\n\nIf compatibility is not set, the module will still be installable, but it will show a warning to the user that the module may not work with their version of the engine."
+        }
+      ]
+    },
+    "authors": {
+      "type": "array",
+      "description": "The authors of the module. This is simply if you want to give credit to the people or add a easy way to contact them. It can be empty if you are the only author.",
+      "items": {
+        "type": "object",
+        "required": ["name", "urls"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The author's name."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The author's email address."
+          },
+          "urls": {
+            "type": "object",
+            "description": "URL to the author's website or profile.\n\nThe key will be used as the link text and the value as the URL.",
+            "additionalProperties": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "owner": {
+            "type": "boolean",
+            "description": "If the author is the owner of the module (simply for credit and visibility)."
+          }
+        }
+      }
+    }
+  }
+}

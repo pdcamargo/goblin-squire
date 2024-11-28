@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "start": "concurrently \"pnpm run api\" \"wait-on tcp:localhost:3001 && pnpm run web\" \"wait-on tcp:localhost:3000 && pnpm run desktop\"",
+    "start:web": "concurrently \"pnpm run web\" \"wait-on tcp:localhost:3000 && pnpm run desktop\"",
     "build": "turbo build",
     "dev": "turbo run dev",
     "lint": "turbo lint",
