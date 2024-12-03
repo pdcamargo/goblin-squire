@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+
 import { QueryClient, QueryClientProvider as TCP } from "@tanstack/react-query";
-import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
 
 const QueryClientProvider = TCP as React.ComponentType<{
   client: QueryClient;

@@ -4,7 +4,8 @@
     "outDir": "dist",
     "paths": {
       "react": ["./node_modules/@types/react"]
-    }
+    },
+    "rootDir": "."
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
