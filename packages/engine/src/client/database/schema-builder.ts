@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { DatabaseOptions, QueryResult } from "./QueryBuilder";
+import { DatabaseOptions, QueryResult } from "./query-builder";
 
 const columnTypeSchema = z.enum([
   "INTEGER",

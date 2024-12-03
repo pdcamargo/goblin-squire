@@ -12,6 +12,8 @@
     "moduleDetection": "force",
     "moduleResolution": "NodeNext",
     "noUncheckedIndexedAccess": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,

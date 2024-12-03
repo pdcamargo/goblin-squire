@@ -1,2 +1,1 @@
-export * from "./Renderer";
-export * from "./Sprite";
+export * from "./renderer";

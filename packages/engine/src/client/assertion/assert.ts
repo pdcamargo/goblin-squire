@@ -1,4 +1,4 @@
-import { AssertionError } from "./Errors";
+import { AssertionError } from "./assert-errors";
 
 export class Assert {
   /**

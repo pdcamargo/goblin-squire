@@ -169,8 +169,6 @@ export class QueryBuilder<
 
     const { query, bindValues } = this.buildQuery();
 
-    console.log({ query, bindValues });
-
     const results = (await this.db.select(query, bindValues)) as Array<any>;
 
     return results.length > 0 ? results[0] : null;
