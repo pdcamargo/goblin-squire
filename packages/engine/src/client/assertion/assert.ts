@@ -179,6 +179,19 @@ export class Assert {
     }
   }
 
+  public static isWithinRange(
+    value: number,
+    min: number,
+    max: number,
+    message?: string,
+  ): void {
+    if (value < min || value > max) {
+      throw new AssertionError(
+        message || `Value is not within the range [${min}, ${max}]`,
+      );
+    }
+  }
+
   /**
    * Asserts that the value is a number
    */
@@ -235,8 +248,19 @@ export class Assert {
     values: T[] | ReadonlyArray<T>,
     message?: string,
   ): asserts value is T {
-    if (!values.includes(value as T)) {
+    if (Array.isArray(values) && !values.includes(value as T)) {
       throw new AssertionError(message || "Value is not an enum value");
+    }
+  }
+
+  /**
+   * Assert that the value is strictly equal to the expected value
+   */
+  public static equal<T>(value: unknown, expected: T, message?: string): void {
+    if (value !== expected) {
+      throw new AssertionError(
+        message || `Value is not equal to the expected value`,
+      );
     }
   }
 }

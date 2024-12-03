@@ -25,7 +25,10 @@ export default function GamePage() {
 
     const app = new GoblinSquire.Application();
 
-    await app.initialize({ worldId });
+    await app.initialize({
+      worldId,
+      container: document.getElementById("gameCanvasContainer")!,
+    });
 
     await app.run();
 

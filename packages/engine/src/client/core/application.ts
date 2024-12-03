@@ -5,10 +5,12 @@ import { FileSystem } from "./file-system";
 import { Logger } from "../logger";
 import { Assert } from "../assertion";
 import { WorldDatabase } from "./world-database";
+import { Engine } from "./engine";
 
 export class Application extends EventEmitter {
   #initialized = false;
 
+  #engine: Engine;
   #logger: Logger;
   #applicationPath: ApplicationPath;
   #fileSystem: FileSystem;
@@ -23,6 +25,7 @@ export class Application extends EventEmitter {
     this.#fileSystem = new FileSystem();
     this.#renderer = new Renderer();
     this.#database = new WorldDatabase();
+    this.#engine = new Engine();
   }
 
   async #validateWorld(worldId: string) {
@@ -36,7 +39,13 @@ export class Application extends EventEmitter {
     Assert.isTrue(worldFolderExists, "World does not exist.");
   }
 
-  public async initialize({ worldId }: { worldId: string }) {
+  public async initialize({
+    worldId,
+    container,
+  }: {
+    worldId: string;
+    container: HTMLElement;
+  }) {
     await this.#logger.initialize();
     await this.#applicationPath.initialize();
     await this.#fileSystem.initialize();
@@ -45,15 +54,15 @@ export class Application extends EventEmitter {
 
     await this.#database.initialize(worldId);
 
+    await this.#engine.initialize(container);
+
     await this.#renderer.initialize();
 
     this.#initialized = true;
-
-    console.log(this);
   }
 
   public async run() {
-    // TODO: initialize loop
+    this.#engine.run();
   }
 
   public get logger() {
