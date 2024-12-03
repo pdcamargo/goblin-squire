@@ -1,10 +1,25 @@
 import REGL from "regl";
 import { Assert } from "../assertion";
+import { Clock } from "./clock";
+import EventEmitter from "eventemitter3";
 
-export class Engine {
+export type EngineEvents = {
+  fixedUpdate: (delta: number) => void;
+  update: (delta: number) => void;
+  render: (delta: number) => void;
+};
+
+export class Engine extends EventEmitter<EngineEvents> {
   #regl: REGL.Regl | null = null;
+  #clock: Clock;
 
   static #instance: Engine | null = null;
+
+  constructor() {
+    super();
+
+    this.#clock = new Clock();
+  }
 
   public async initialize(container: HTMLElement) {
     Assert.isNullOrUndefined(
@@ -17,6 +32,22 @@ export class Engine {
     this.#regl = REGL({
       container,
     });
+
+    this.#clock.onFixedUpdate = this.#onFixedUpdate.bind(this);
+    this.#clock.onUpdate = this.#onUpdate.bind(this);
+    this.#clock.onRender = this.#onRender.bind(this);
+  }
+
+  #onFixedUpdate(delta: number) {
+    this.emit("fixedUpdate", delta);
+  }
+
+  #onUpdate(delta: number) {
+    this.emit("update", delta);
+  }
+
+  #onRender(delta: number) {
+    this.emit("render", delta);
   }
 
   public static get instance() {
@@ -34,5 +65,9 @@ export class Engine {
     return this.#regl;
   }
 
-  public run() {}
+  public run() {
+    this.regl.frame((context) => {
+      this.#clock.tick(context.time);
+    });
+  }
 }

@@ -56,7 +56,13 @@ export class Application extends EventEmitter {
 
     await this.#engine.initialize(container);
 
-    await this.#renderer.initialize();
+    await this.#renderer.initialize(this.#engine.regl);
+
+    this.#engine.on("fixedUpdate", (delta) => {});
+    this.#engine.on("update", (delta) => {});
+    this.#engine.on("render", (delta) => {
+      this.#renderer.render(delta);
+    });
 
     this.#initialized = true;
   }
