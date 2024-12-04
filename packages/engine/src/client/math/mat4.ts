@@ -22,6 +22,14 @@ export class Mat4 {
     return modelMatrix;
   }
 
+  public static getViewMatrix(position: Vector2) {
+    const viewMatrix = mat4.create();
+
+    mat4.translate(viewMatrix, viewMatrix, [-position.x, -position.y, 0]);
+
+    return viewMatrix;
+  }
+
   public static getProjectionViewMatrix(
     width: number,
     height: number,

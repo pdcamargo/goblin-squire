@@ -6,6 +6,9 @@ import { Logger } from "../logger";
 import { Assert } from "../assertion";
 import { WorldDatabase } from "./world-database";
 import { Engine } from "./engine";
+import { SceneManager } from "./scene-manager";
+import { Camera2d } from "../renderer/nodes/camera2d";
+import { Sprite } from "../renderer/nodes/sprite";
 
 export class Application extends EventEmitter {
   #initialized = false;
@@ -15,6 +18,7 @@ export class Application extends EventEmitter {
   #applicationPath: ApplicationPath;
   #fileSystem: FileSystem;
   #renderer: Renderer;
+  #sceneManager: SceneManager;
   #database: WorldDatabase;
 
   constructor() {
@@ -26,6 +30,7 @@ export class Application extends EventEmitter {
     this.#renderer = new Renderer();
     this.#database = new WorldDatabase();
     this.#engine = new Engine();
+    this.#sceneManager = new SceneManager();
   }
 
   async #validateWorld(worldId: string) {
@@ -58,10 +63,31 @@ export class Application extends EventEmitter {
 
     await this.#renderer.initialize(this.#engine.regl);
 
+    await this.#sceneManager.initialize();
+
+    const ctx = document
+      .createElement("canvas")
+      .getContext("2d") as CanvasRenderingContext2D;
+
+    ctx.canvas.width = 50;
+    ctx.canvas.height = 50;
+
+    ctx.fillStyle = "red";
+
+    ctx.fillRect(0, 0, 50, 50);
+
+    const fakeTexture = this.#renderer.regl.texture(ctx.canvas);
+
+    const scene = this.#sceneManager.currentScene!;
+
+    const sprite = scene.createNode(Sprite, "Fake Sprite");
+
+    sprite.texture = fakeTexture;
+
     this.#engine.on("fixedUpdate", (delta) => {});
     this.#engine.on("update", (delta) => {});
     this.#engine.on("render", (delta) => {
-      this.#renderer.render(delta);
+      this.#renderer.render(this.#sceneManager.currentScene!, Camera2d.main);
     });
 
     this.#initialized = true;
