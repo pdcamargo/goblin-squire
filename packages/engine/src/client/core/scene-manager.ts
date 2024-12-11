@@ -20,9 +20,7 @@ export class SceneManager {
     if (!this.#currentScene) {
       const defaultScene = new Scene("Default Scene");
 
-      const cam = defaultScene.createNode(Camera2d, "Main Camera");
-
-      cam.position.set(150, 110);
+      defaultScene.createNode(Camera2d, "Main Camera");
 
       this.#currentScene = defaultScene;
     }

@@ -63,6 +63,30 @@ export class SchemaBuilder {
     return this;
   }
 
+  public async dropTable(tableName: string) {
+    z.string().parse(tableName);
+
+    await this.db.execute(`DROP TABLE IF EXISTS ${tableName}`);
+  }
+
+  public async renameTable(oldName: string, newName: string) {
+    z.string().parse(oldName);
+    z.string().parse(newName);
+
+    await this.db.execute(`ALTER TABLE ${oldName} RENAME TO ${newName}`);
+  }
+
+  public async hasTable(tableName: string): Promise<boolean> {
+    z.string().parse(tableName);
+
+    const result = await this.db.select(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name=?`,
+      [tableName],
+    );
+
+    return (result as any[]).length > 0;
+  }
+
   public addColumn(column: ColumnDefinition): this {
     columnDefinitionSchema.parse(column);
 

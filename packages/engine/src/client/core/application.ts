@@ -1,5 +1,10 @@
 import EventEmitter from "eventemitter3";
-import { Renderer } from "../renderer";
+import {
+  GlobalLight2d,
+  LightBlendMode,
+  PointLight2d,
+  Renderer,
+} from "../renderer";
 import { ApplicationPath } from "./application-path";
 import { FileSystem } from "./file-system";
 import { Logger } from "../logger";
@@ -65,6 +70,10 @@ export class Application extends EventEmitter {
 
     await this.#sceneManager.initialize();
 
+    console.log({
+      paths: this.#applicationPath,
+    });
+
     const ctx = document
       .createElement("canvas")
       .getContext("2d") as CanvasRenderingContext2D;
@@ -82,7 +91,35 @@ export class Application extends EventEmitter {
 
     const sprite = scene.createNode(Sprite, "Fake Sprite");
 
+    sprite.scale.set(2, 2);
+
     sprite.texture = fakeTexture;
+
+    const globalLight = scene.createNode(GlobalLight2d, "Global Light 1");
+
+    globalLight.intensity = 0;
+    globalLight.blendMode = LightBlendMode.ADD;
+
+    const ctx2 = document
+      .createElement("canvas")
+      .getContext("2d") as CanvasRenderingContext2D;
+
+    ctx2.canvas.width = 512 * 10;
+    ctx2.canvas.height = 512 * 10;
+
+    ctx2.fillStyle = "white";
+
+    ctx2.fillRect(0, 0, 512 * 10, 512 * 10);
+
+    const fakeTexture2 = this.#renderer.regl.texture(ctx2.canvas);
+
+    const pointLight = scene.createNode(PointLight2d, "Point Light 1");
+
+    pointLight.blendMode = LightBlendMode.SUBTRACT;
+
+    pointLight.texture = fakeTexture2;
+
+    pointLight.position.set(0, 0);
 
     this.#engine.on("fixedUpdate", (delta) => {});
     this.#engine.on("update", (delta) => {});

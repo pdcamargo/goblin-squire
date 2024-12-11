@@ -22,6 +22,10 @@ export class Mat4 {
     return modelMatrix;
   }
 
+  public static inverseModelMatrix(matrix: mat4) {
+    return mat4.invert(mat4.create(), matrix);
+  }
+
   public static getViewMatrix(position: Vector2) {
     const viewMatrix = mat4.create();
 

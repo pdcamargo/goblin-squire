@@ -149,7 +149,12 @@ export class QueryBuilder<
         "Cannot use 'execute' method for SELECT queries. Use 'first()' or 'all()' instead.",
       );
     }
-    return this.db.execute(query, bindValues);
+    const ex = await this.db.execute(query, bindValues);
+
+    // clean up inner states so this reference can be reused
+    this.clearState();
+
+    return ex;
   }
 
   // Retrieve a single record
@@ -171,7 +176,12 @@ export class QueryBuilder<
 
     const results = (await this.db.select(query, bindValues)) as Array<any>;
 
-    return results.length > 0 ? results[0] : null;
+    const finalRes = results.length > 0 ? results[0] : null;
+
+    // clean up inner states so this reference can be reused
+    this.clearState();
+
+    return finalRes;
   }
 
   // Retrieve all matching records
@@ -188,7 +198,21 @@ export class QueryBuilder<
 
     const { query, bindValues } = this.buildQuery();
 
-    return this.db.select(query, bindValues);
+    const res = await this.db.select(query, bindValues);
+
+    // clean up inner states so this reference can be reused
+    this.clearState();
+
+    return res as any;
+  }
+
+  private clearState() {
+    this.columns = ["*"];
+    this.whereClauses = [];
+    this.orderByClauses = [];
+    this.joinClauses = [];
+    this.limitValue = undefined;
+    this.offsetValue = undefined;
   }
 
   // Build the SQL query and bind values
